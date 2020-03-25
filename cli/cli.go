@@ -8,13 +8,16 @@ import (
 	"github.com/babajka/babajka-analytics/babajka"
 )
 
-var secretPath string
-
 func main() {
+	var secretPath, env string
+
 	flag.StringVar(&secretPath, "secretPath", "", "Path to secret configuration file")
+	// TODO: to consider retrieving env from a secret file.
+	flag.StringVar(&env, "env", "", "Environment")
+
 	flag.Parse()
 
-	babajkaClient, err := babajka.NewClient(secretPath)
+	babajkaClient, err := babajka.NewClient(secretPath, env)
 	if err != nil {
 		log.Fatal(err)
 	}

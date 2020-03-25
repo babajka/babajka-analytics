@@ -18,29 +18,30 @@ type dbAnalyticsDocument struct {
 	Metrics LocalizedMetric
 }
 
-func (cl *Client) pushMetricsToDB(metrics *Metrics) (int, error) {
+func (cl *Client) pushMetricsToDB(metrics *Metrics) (countDocuments, totalMetrics int, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	collection, err := getMongoCollection(ctx, cl.config.Mongodb.URL, cl.config.Mongodb.Options.DBName)
 	if err != nil {
-		return 0, err
+		return
 	}
 
 	err = collection.Drop(ctx)
 	if err != nil {
-		return 0, err
+		return
 	}
 
-	count := 0
 	for slug, analyticsData := range *metrics {
 		if _, err := collection.InsertOne(ctx,
 			dbAnalyticsDocument{Slug: slug, Metrics: analyticsData}); err != nil {
-			return 0, err
 		}
-		count++
+		for _, metric := range analyticsData {
+			totalMetrics += metric
+		}
+		countDocuments++
 	}
-	return count, nil
+	return
 }
 
 func getMongoCollection(ctx context.Context, connectionString string, dbName string) (*mongo.Collection, error) {
