@@ -11,12 +11,13 @@ var (
 
 // Client is an entry point for Babajka package.
 type Client struct {
-	config *SecretConfig
-	env    string
+	config      *SecretConfig
+	env         string
+	enableSlack bool
 }
 
 // NewClient ..
-func NewClient(secretConfigPath, env string) (*Client, error) {
+func NewClient(secretConfigPath, env string, enableSlack bool) (*Client, error) {
 	config, err := readSecretConfig(secretConfigPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret config: %v", err)
@@ -31,7 +32,7 @@ func NewClient(secretConfigPath, env string) (*Client, error) {
 	if !validEnv {
 		return nil, fmt.Errorf("bad env provided: '%v'", env)
 	}
-	return &Client{config, env}, nil
+	return &Client{config, env, enableSlack}, nil
 }
 
 // UpdateAnalytics ...
@@ -40,19 +41,25 @@ func (cl *Client) UpdateAnalytics() error {
 	if err != nil {
 		return err
 	}
+
 	countDocuments, totalMetrics, err := cl.pushMetricsToDB(metrics)
 	if err != nil {
 		return err
 	}
+
 	result := fmt.Sprintf(`ANALYTICS REPORT
     Env: %v
     Records (unique article slugs) pushed: %v
     Total metrics pageviews: %v`, cl.env, countDocuments, totalMetrics)
 	log.Printf(result)
-	slackConfig := cl.config.Services.SlackAnalyticsApp
-	err = pushSlackNotification(slackConfig.APIToken, slackConfig.ChannelName, result)
-	if err != nil {
-		return err
+
+	if cl.enableSlack {
+		slackConfig := cl.config.Services.SlackAnalyticsApp
+		err = pushSlackNotification(slackConfig.APIToken, slackConfig.ChannelName, result)
+		if err != nil {
+			return err
+		}
 	}
+
 	return nil
 }
