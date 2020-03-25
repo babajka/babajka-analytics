@@ -22,8 +22,14 @@ type yandexConfig struct {
 	LaunchDate string `json:"launchDate"`
 }
 
+type slackConfig struct {
+	APIToken    string `json:"apiToken"`
+	ChannelName string `json:"channelName"`
+}
+
 type servicesConfig struct {
-	Yandex yandexConfig `json:"yandex"`
+	Yandex            yandexConfig `json:"yandex"`
+	SlackAnalyticsApp slackConfig  `json:"slackAnalyticsApp"`
 }
 
 // SecretConfig ..
