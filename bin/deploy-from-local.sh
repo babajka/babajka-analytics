@@ -2,9 +2,20 @@
 set -e
 
 MODE=$1
-if [ $MODE != "dev" ]; then
-  echo '[FAIL] Mode (for now it is only DEV) must be provided explicitly'
+
+if [[ $MODE != "dev" && $MODE != "prod" ]]; then
+  echo '[FAIL] Mode (dev or prod) must be provided.'
   exit 1
+fi
+
+if [[ $MODE == "prod" ]]; then
+  echo "You're about to deploy to ${bold}prod${normal}. Are you sure? (put the number)"
+  select yn in "Yes" "No"; do
+    case $yn in
+      "Yes" ) break;;
+      "No" ) exit 0;;
+    esac
+  done
 fi
 
 PROJECT_NAME="babajka-analytics"
