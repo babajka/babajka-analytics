@@ -36,15 +36,15 @@ func NewClient(secretConfigPath, env string, enableSlack bool) (*Client, error) 
 }
 
 // UpdateAnalytics ...
-func (cl *Client) UpdateAnalytics() error {
+func (cl *Client) UpdateAnalytics() (Metrics, error) {
 	metrics, err := cl.GetContentMetrics()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	countDocuments, totalMetrics, err := cl.pushMetricsToDB(metrics)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	result := fmt.Sprintf(`ANALYTICS REPORT
@@ -57,9 +57,9 @@ func (cl *Client) UpdateAnalytics() error {
 		slackConfig := cl.config.Services.SlackAnalyticsApp
 		err = pushSlackNotification(slackConfig.APIToken, slackConfig.ChannelName, result)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return metrics, nil
 }

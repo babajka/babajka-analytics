@@ -20,7 +20,7 @@ type LocalizedMetric map[string]int
 type Metrics map[string]LocalizedMetric
 
 // GetContentMetrics returns pageviews for all Wir.by content.
-func (cl *Client) GetContentMetrics() (*Metrics, error) {
+func (cl *Client) GetContentMetrics() (Metrics, error) {
 	yandexConfig := cl.config.Services.Yandex
 	ymClient := yametrica.NewClient(yandexConfig.ProjectID, yandexConfig.LaunchDate, yandexConfig.AuthKey)
 	pv, err := ymClient.GetPageviews()
@@ -46,5 +46,5 @@ func (cl *Client) GetContentMetrics() (*Metrics, error) {
 		}
 		articles[slug][locale] += views
 	}
-	return &articles, nil
+	return articles, nil
 }

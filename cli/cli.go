@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	"github.com/babajka/babajka-analytics/babajka"
@@ -10,12 +9,13 @@ import (
 
 func main() {
 	var secretPath, env string
-	var enableSlack bool
+	var enableSlack, printReport bool
 
 	flag.StringVar(&secretPath, "secretPath", "", "Path to secret configuration file")
 	// TODO: to consider retrieving env from a secret file.
 	flag.StringVar(&env, "env", "", "Environment name")
 	flag.BoolVar(&enableSlack, "enableSlack", false, "This options switches slack notifications on")
+	flag.BoolVar(&printReport, "printReport", false, "This options produces detailed output")
 
 	flag.Parse()
 
@@ -24,11 +24,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = babajkaClient.UpdateAnalytics()
+	metrics, err := babajkaClient.UpdateAnalytics()
 	if err != nil {
-		fmt.Println("failed to update analytics:", err)
+		log.Fatal("failed to update analytics:", err)
 	}
 
-	// metrics := babajka.GetContentMetrics()
-	// printTable(metrics)
+	if printReport {
+		printTable(metrics)
+	}
 }

@@ -18,7 +18,7 @@ type dbAnalyticsDocument struct {
 	Metrics LocalizedMetric
 }
 
-func (cl *Client) pushMetricsToDB(metrics *Metrics) (countDocuments, totalMetrics int, err error) {
+func (cl *Client) pushMetricsToDB(metrics Metrics) (countDocuments, totalMetrics int, err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -32,7 +32,7 @@ func (cl *Client) pushMetricsToDB(metrics *Metrics) (countDocuments, totalMetric
 		return
 	}
 
-	for slug, analyticsData := range *metrics {
+	for slug, analyticsData := range metrics {
 		if _, err := collection.InsertOne(ctx,
 			dbAnalyticsDocument{Slug: slug, Metrics: analyticsData}); err != nil {
 		}
