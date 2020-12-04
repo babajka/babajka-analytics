@@ -9,12 +9,12 @@ import (
 
 func printTable(metrics babajka.Metrics) {
 	fmt.Printf("\nYandex Metrics for Production wir.by\n\n")
-	fmt.Printf("%30sbe   ru   en\n", "")
-	rows := []string{}
+	fmt.Printf("%30sbe     ru     en\n", "")
+	var rows []string
 	for slug, metric := range metrics {
 		tmp := fmt.Sprintf("%-30s", slug)
 		for _, loc := range []string{"be", "ru", "en"} {
-			tmp += fmt.Sprintf("%-3d  ", metric[loc])
+			tmp += fmt.Sprintf("%-5d  ", metric[loc])
 		}
 		tmp += "\n"
 		rows = append(rows, tmp)

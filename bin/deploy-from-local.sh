@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+bold=$(tput bold)
+normal=$(tput sgr0)
+
 MODE=$1
 
 if [[ $MODE != "dev" && $MODE != "prod" ]]; then
@@ -18,18 +21,15 @@ if [[ $MODE == "prod" ]]; then
   done
 fi
 
-PROJECT_NAME="babajka-analytics"
-SRC_REMOTE_PATH="/home/wir-$MODE/go/src/github.com/babajka/$PROJECT_NAME"
+# This locally builds binary which will run on remote server.
+GOOS=linux GOARCH=amd64 go build -o build/analytics-linux ./cli
+echo "[OK] Binary is built locally"
+
 HOST="wir-$MODE@$MODE.wir.by"
-BIN_LOCATION="/home/wir-$MODE/deployed/analytics"
+BIN_FOLDER="/home/wir-$MODE/deployed/analytics"
 
-ssh $HOST "mkdir -p \"${SRC_REMOTE_PATH}\""
-echo '[OK] src folder ensured to exist'
+ssh "${HOST}" "mkdir -p \"${BIN_FOLDER}\""
+echo '[OK] Remote binary folder ensured to exist'
 
-rsync -r --delete-after --exclude=.git . "$HOST:${SRC_REMOTE_PATH}/"
-echo '[OK] Analytics sources pushed to server'
-
-# ? do I need to explicitly install dependencies
-
-ssh -l "wir-$MODE" $HOST 'bash -s' < bin/build-remote.sh $MODE
-echo '[OK] Binary is built'
+scp ./build/analytics-linux "${HOST}:${BIN_FOLDER}/babajka-analytics"
+echo "[OK] Analytics binary pushed to ${MODE} server"

@@ -2,21 +2,17 @@ package babajka
 
 import (
 	"fmt"
-	"log"
-	"net/url"
 	"regexp"
 
 	"github.com/babajka/babajka-analytics/yametrica"
 )
 
-const (
-	contentPathRgxp = `/(?P<Locale>ru|be|en)/article/(?P<Slug>[a-zA-Z0-9-_]*)/`
-)
+var contentPathRE = regexp.MustCompile(`/(?P<Locale>ru|be|en)/article/(?P<Slug>[a-zA-Z0-9-_]*)/`)
 
-// LocalizedMetric maps locale to number of views
+// LocalizedMetric maps locale to number of views.
 type LocalizedMetric map[string]int
 
-// Metrics maps content content slug to localized numbers
+// Metrics maps content content slug to localized numbers.
 type Metrics map[string]LocalizedMetric
 
 // GetContentMetrics returns pageviews for all Wir.by content.
@@ -27,16 +23,9 @@ func (cl *Client) GetContentMetrics() (Metrics, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from Yandex: %v", err)
 	}
-	r := regexp.MustCompile(contentPathRgxp)
 	articles := make(Metrics)
-	for rawurl, views := range *pv {
-		url, err := url.Parse(rawurl)
-		if err != nil {
-			log.Printf("failed to parse URL '%s': %v\n", rawurl, err)
-			continue
-		}
-		path := url.RequestURI()
-		match := r.FindStringSubmatch(path)
+	for rawURL, views := range pv {
+		match := contentPathRE.FindStringSubmatch(rawURL)
 		if match == nil {
 			continue
 		}

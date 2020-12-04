@@ -18,17 +18,17 @@ const (
 type Pageviews map[string]int
 
 type ymDimension struct {
-	Name string
+	Name string `json:"name"`
 }
 
 type ymDataRow struct {
-	Dimensions []ymDimension
-	Metrics    []float32
+	Dimensions []ymDimension `json:"dimensions"`
+	Metrics    []float64     `json:"metrics"`
 }
 
 type ymResponse struct {
-	Query interface{}
-	Data  []ymDataRow
+	// Query interface{}
+	Data []ymDataRow `json:"data"`
 }
 
 // Client is a simple client for Yandex.Metrica
@@ -48,31 +48,40 @@ func NewClient(projectID, date1, authKey string) *Client {
 }
 
 // GetPageviews returns pageviews for all Wir.by content.
-func (ym *Client) GetPageviews() (*Pageviews, error) {
+func (ym *Client) GetPageviews() (Pageviews, error) {
 	resp, err := ym.makeRequest()
 	if err != nil {
 		return nil, err
 	}
 
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 	resp.Body.Close()
 
 	var ymResp ymResponse
-	if err := json.Unmarshal([]byte(body), &ymResp); err != nil {
+	if err := json.Unmarshal(body, &ymResp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal json: %v", err)
 	}
 
 	pv := make(Pageviews)
 	for _, dataRow := range ymResp.Data {
-		pv[dataRow.Dimensions[1].Name] = int(dataRow.Metrics[0])
+		pv[dataRow.Dimensions[1].Name] += int(dataRow.Metrics[0])
 	}
 
-	return &pv, nil
+	return pv, nil
 }
 
 func (ym *Client) makeRequest() (*http.Response, error) {
-	client := &http.Client{}
-	req, _ := http.NewRequest("GET", fmt.Sprintf(queryString, dimensions, metrics, ym.projectID, ym.date1, limit), nil)
+	url := fmt.Sprintf(queryString, dimensions, metrics, ym.projectID, ym.date1, limit)
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	req.Header.Set("Authorization", fmt.Sprintf("OAuth %s", ym.authKey))
-	return client.Do(req)
+
+	return http.DefaultClient.Do(req)
 }

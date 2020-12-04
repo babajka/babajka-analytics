@@ -41,15 +41,21 @@ type SecretConfig struct {
 // readSecretConfig ..
 func readSecretConfig(filePath string) (*SecretConfig, error) {
 	jsonConfig, err := os.Open(filePath)
-	defer jsonConfig.Close()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read secret file: %v", err)
 	}
-	buf, _ := ioutil.ReadAll(jsonConfig)
+	defer jsonConfig.Close()
+
+	buf, err := ioutil.ReadAll(jsonConfig)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from json config: %v", err)
+	}
+
 	config := &SecretConfig{}
 	err = json.Unmarshal(buf, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to unmarshal secret file: %v", err)
 	}
+
 	return config, nil
 }
