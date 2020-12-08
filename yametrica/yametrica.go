@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	queryString = "https://api-metrika.yandex.net/stat/v1/data?dimensions=%s&metrics=%s&id=%s&date1=%s&limit=%s"
+	queryString = "https://api-metrika.yandex.net/stat/v1/data?dimensions=%s&metrics=%s&id=%s&date1=%s&limit=%s&accuracy=%s"
 	dimensions  = "ym:pv:title,ym:pv:URL"
 	metrics     = "ym:pv:pageviews"
 	limit       = "100000"
+	accuracy    = "full" // https://yandex.ru/dev/metrika/doc/api2/api_v1/sampling.html/
 )
 
 // Pageviews per URL
@@ -74,7 +75,7 @@ func (ym *Client) GetPageviews() (Pageviews, error) {
 }
 
 func (ym *Client) makeRequest() (*http.Response, error) {
-	url := fmt.Sprintf(queryString, dimensions, metrics, ym.projectID, ym.date1, limit)
+	url := fmt.Sprintf(queryString, dimensions, metrics, ym.projectID, ym.date1, limit, accuracy)
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {

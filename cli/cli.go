@@ -26,7 +26,7 @@ func main() {
 
 	metrics, err := babajkaClient.UpdateAnalytics()
 	if err != nil {
-		log.Fatal("failed to update analytics:", err)
+		log.Fatalf("failed to update analytics: %v", err)
 	}
 
 	if printReport {
