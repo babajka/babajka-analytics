@@ -25,7 +25,12 @@ fi
 GOOS=linux GOARCH=amd64 go build -o build/analytics-linux ./cli
 echo "[OK] Binary is built locally"
 
-HOST="wir-$MODE@$MODE.wir.by"
+if [[ $MODE == "dev" ]]; then
+  HOST="wir-dev@dev.wir.by"
+elif [[ $MODE == "prod" ]]; then
+  HOST="wir-prod@wir.by"
+fi
+
 BIN_FOLDER="/home/wir-$MODE/deployed/analytics"
 
 ssh "${HOST}" "mkdir -p \"${BIN_FOLDER}\""
