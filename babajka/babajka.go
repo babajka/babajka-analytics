@@ -35,10 +35,18 @@ func NewClient(secretConfigPath, env string, enableSlack bool) (*Client, error) 
 	return &Client{config, env, enableSlack}, nil
 }
 
-// UpdateAnalytics ...
+// UpdateAnalytics updates analytics in Babajka DB.
 func (cl *Client) UpdateAnalytics() (Metrics, error) {
 	metrics, err := cl.GetContentMetrics()
 	if err != nil {
+		if cl.enableSlack {
+			slackConfig := cl.config.Services.SlackAnalyticsApp
+			text := fmt.Sprintf("Failed to perform update, error occurred: %v", err)
+			slackErr := pushSlackNotification(slackConfig.APIToken, slackConfig.ChannelName, text)
+			if slackErr != nil {
+				log.Printf("failed to send error to slack: %v", slackErr)
+			}
+		}
 		return nil, err
 	}
 

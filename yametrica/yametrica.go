@@ -29,7 +29,13 @@ type ymDataRow struct {
 
 type ymResponse struct {
 	// Query interface{}
-	Data []ymDataRow `json:"data"`
+	Data   []ymDataRow `json:"data"`
+	Errors []struct {
+		ErrorType string `json:"error_type"`
+		Message   string `json:"message"`
+	} `json:"errors"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
 }
 
 // Client is a simple client for Yandex.Metrica
@@ -48,8 +54,8 @@ func NewClient(projectID, date1, authKey string) *Client {
 	}
 }
 
-// GetPageviews returns pageviews for all Wir.by content.
-func (ym *Client) GetPageviews() (Pageviews, error) {
+// GetPageViews returns page views for all Wir.by content.
+func (ym *Client) GetPageViews() (Pageviews, error) {
 	resp, err := ym.makeRequest()
 	if err != nil {
 		return nil, err
@@ -64,6 +70,10 @@ func (ym *Client) GetPageviews() (Pageviews, error) {
 	var ymResp ymResponse
 	if err := json.Unmarshal(body, &ymResp); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal json: %v", err)
+	}
+
+	if len(ymResp.Errors) > 0 {
+		return nil, fmt.Errorf("failed to get page views: code '%v', message '%v', errors '%v'", ymResp.Code, ymResp.Message, ymResp.Errors)
 	}
 
 	pv := make(Pageviews)

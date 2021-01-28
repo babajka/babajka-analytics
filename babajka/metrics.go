@@ -21,7 +21,7 @@ type Metrics map[string]LocalizedMetric
 func (cl *Client) GetContentMetrics() (Metrics, error) {
 	yandexConfig := cl.config.Services.Yandex
 	ymClient := yametrica.NewClient(yandexConfig.ProjectID, yandexConfig.LaunchDate, yandexConfig.AuthKey)
-	pv, err := ymClient.GetPageviews()
+	pv, err := ymClient.GetPageViews()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get data from Yandex: %v", err)
 	}
